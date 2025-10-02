@@ -43,10 +43,13 @@ export default function NewFormPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [records, setRecords] = useState<RecordInput[]>([]);
   const [currentRecord, setCurrentRecord] = useState<Partial<RecordInput>>({
+    carNumber: 1,
     productId: "",
-    temperature: 0,
-    recordedAt: new Date().toISOString().slice(0, 16),
-    notes: "",
+    productTemperature: 0,
+    defrostStartTime: "",
+    consumptionStartTime: "",
+    consumptionEndTime: "",
+    observations: "",
   });
 
   const {
@@ -90,10 +93,10 @@ export default function NewFormPage() {
   };
 
   const handleAddRecord = () => {
-    if (!currentRecord.productId || currentRecord.temperature === undefined) {
+    if (!currentRecord.productId || currentRecord.productTemperature === undefined || !currentRecord.carNumber) {
       toast({
         title: "Error",
-        description: "Complete todos los campos del registro",
+        description: "Complete los campos requeridos (Coche, Producto y Temperatura)",
         variant: "destructive",
       });
       return;
@@ -104,18 +107,25 @@ export default function NewFormPage() {
 
     const newRecord: RecordInput = {
       tempId: Date.now().toString(),
+      carNumber: currentRecord.carNumber,
       productId: currentRecord.productId,
-      temperature: currentRecord.temperature,
-      recordedAt: currentRecord.recordedAt || new Date().toISOString(),
-      notes: currentRecord.notes,
+      productCode: product.code,
+      productTemperature: currentRecord.productTemperature,
+      defrostStartTime: currentRecord.defrostStartTime,
+      consumptionStartTime: currentRecord.consumptionStartTime,
+      consumptionEndTime: currentRecord.consumptionEndTime,
+      observations: currentRecord.observations,
     };
 
     setRecords([...records, newRecord]);
     setCurrentRecord({
+      carNumber: (currentRecord.carNumber || 0) + 1,
       productId: "",
-      temperature: 0,
-      recordedAt: new Date().toISOString().slice(0, 16),
-      notes: "",
+      productTemperature: 0,
+      defrostStartTime: "",
+      consumptionStartTime: "",
+      consumptionEndTime: "",
+      observations: "",
     });
 
     toast({
@@ -139,22 +149,22 @@ export default function NewFormPage() {
     }
 
     try {
-      // Create form
+      // Create form with all temperature records in a single API call
       const form = await createForm({
         destination: data.destination,
         defrostDate: data.defrostDate,
         productionDate: data.productionDate,
-      });
-
-      // Add all records
-      for (const record of records) {
-        await addRecord(form.id, {
+        temperatureRecords: records.map((record) => ({
+          carNumber: record.carNumber,
+          productCode: record.productCode,
           productId: record.productId,
-          temperature: record.temperature,
-          recordedAt: record.recordedAt,
-          notes: record.notes,
-        });
-      }
+          defrostStartTime: record.defrostStartTime,
+          productTemperature: record.productTemperature,
+          consumptionStartTime: record.consumptionStartTime,
+          consumptionEndTime: record.consumptionEndTime,
+          observations: record.observations,
+        })),
+      });
 
       // Clear draft
       localStorage.removeItem("formDraft");
@@ -198,6 +208,13 @@ export default function NewFormPage() {
     const product = getProductById(productId);
     if (!product) return false;
     return temp < product.minTemperature || temp > product.maxTemperature;
+  };
+
+  const convertTimeToTimeSpan = (timeString: string): string => {
+    // Convert "HH:mm" to "HH:mm:ss" format
+    if (!timeString) return "";
+    if (timeString.length === 5) return `${timeString}:00`;
+    return timeString;
   };
 
   return (
@@ -270,9 +287,24 @@ export default function NewFormPage() {
             <CardTitle>Agregar Registro de Temperatura</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <div>
-                <Label>Producto</Label>
+                <Label>Número de Coche *</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={currentRecord.carNumber || ""}
+                  onChange={(e) =>
+                    setCurrentRecord({
+                      ...currentRecord,
+                      carNumber: parseInt(e.target.value) || 1,
+                    })
+                  }
+                  placeholder="1"
+                />
+              </div>
+              <div>
+                <Label>Producto *</Label>
                 <Select
                   value={currentRecord.productId}
                   onValueChange={(value) =>
@@ -280,7 +312,7 @@ export default function NewFormPage() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecciona" />
+                    <SelectValue placeholder="Selecciona producto" />
                   </SelectTrigger>
                   <SelectContent>
                     {products.map((product) => (
@@ -292,47 +324,76 @@ export default function NewFormPage() {
                 </Select>
               </div>
               <div>
-                <Label>Temperatura (°C)</Label>
+                <Label>Temperatura del Producto (°C) *</Label>
                 <Input
                   type="number"
                   step="0.1"
-                  value={currentRecord.temperature}
+                  value={currentRecord.productTemperature || ""}
                   onChange={(e) =>
                     setCurrentRecord({
                       ...currentRecord,
-                      temperature: parseFloat(e.target.value) || 0,
+                      productTemperature: parseFloat(e.target.value) || 0,
                     })
                   }
+                  placeholder="0.0"
                 />
-                {currentRecord.productId && currentRecord.temperature !== undefined && (
+                {currentRecord.productId && currentRecord.productTemperature !== undefined && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Rango:{" "}
-                    {formatTemperature(getProductById(currentRecord.productId)?.minTemperature || 0)}{" "}
-                    -{" "}
-                    {formatTemperature(getProductById(currentRecord.productId)?.maxTemperature || 0)}
+                    Rango permitido:{" "}
+                    {getProductById(currentRecord.productId)?.minTemperature || 0}°C -{" "}
+                    {getProductById(currentRecord.productId)?.maxTemperature || 0}°C
                   </p>
                 )}
               </div>
               <div>
-                <Label>Fecha y Hora</Label>
+                <Label>Hora Inicio Descongelación</Label>
                 <Input
-                  type="datetime-local"
-                  value={currentRecord.recordedAt}
+                  type="time"
+                  value={currentRecord.defrostStartTime?.substring(0, 5) || ""}
                   onChange={(e) =>
-                    setCurrentRecord({ ...currentRecord, recordedAt: e.target.value })
+                    setCurrentRecord({
+                      ...currentRecord,
+                      defrostStartTime: e.target.value ? `${e.target.value}:00` : "",
+                    })
                   }
                 />
               </div>
               <div>
-                <Label>Notas (opcional)</Label>
+                <Label>Hora Inicio Consumo</Label>
                 <Input
-                  value={currentRecord.notes}
+                  type="time"
+                  value={currentRecord.consumptionStartTime?.substring(0, 5) || ""}
                   onChange={(e) =>
-                    setCurrentRecord({ ...currentRecord, notes: e.target.value })
+                    setCurrentRecord({
+                      ...currentRecord,
+                      consumptionStartTime: e.target.value ? `${e.target.value}:00` : "",
+                    })
                   }
-                  placeholder="Notas"
                 />
               </div>
+              <div>
+                <Label>Hora Fin Consumo</Label>
+                <Input
+                  type="time"
+                  value={currentRecord.consumptionEndTime?.substring(0, 5) || ""}
+                  onChange={(e) =>
+                    setCurrentRecord({
+                      ...currentRecord,
+                      consumptionEndTime: e.target.value ? `${e.target.value}:00` : "",
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Observaciones (opcional)</Label>
+              <Input
+                value={currentRecord.observations || ""}
+                onChange={(e) =>
+                  setCurrentRecord({ ...currentRecord, observations: e.target.value })
+                }
+                placeholder="Cualquier observación relevante"
+              />
             </div>
             <Button type="button" onClick={handleAddRecord}>
               <Plus className="h-4 w-4 mr-2" />
@@ -354,41 +415,55 @@ export default function NewFormPage() {
             ) : (
               <div className="space-y-2">
                 {records.map((record) => {
-                  const product = getProductById(record.productId);
+                  const product = getProductById(record.productId || "");
                   const isOutOfRange = isTemperatureOutOfRange(
-                    record.temperature,
-                    record.productId
+                    record.productTemperature,
+                    record.productId || ""
                   );
 
                   return (
                     <div
                       key={record.tempId}
-                      className={`flex items-center justify-between p-3 rounded-lg border ${
+                      className={`flex items-center justify-between p-4 rounded-lg border ${
                         isOutOfRange ? "border-destructive bg-destructive/10" : ""
                       }`}
                     >
-                      <div className="flex-1 grid grid-cols-4 gap-4">
-                        <div>
-                          <p className="text-sm font-medium">{product?.name}</p>
-                          <p className="text-xs text-muted-foreground">{product?.code}</p>
+                      <div className="flex-1 space-y-2">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div>
+                            <p className="text-xs text-muted-foreground">Coche</p>
+                            <p className="text-sm font-medium">#{record.carNumber}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Producto</p>
+                            <p className="text-sm font-medium">{product?.name}</p>
+                            <p className="text-xs text-muted-foreground">{product?.code}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Temperatura</p>
+                            <p className="text-sm font-medium">
+                              {record.productTemperature}°C
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Rango: {product?.minTemperature}°C - {product?.maxTemperature}°C
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Horarios</p>
+                            {record.defrostStartTime && (
+                              <p className="text-xs">Desc: {record.defrostStartTime?.substring(0, 5)}</p>
+                            )}
+                            {record.consumptionStartTime && (
+                              <p className="text-xs">Cons: {record.consumptionStartTime?.substring(0, 5)} - {record.consumptionEndTime?.substring(0, 5)}</p>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium">
-                            {formatTemperature(record.temperature)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Rango: {formatTemperature(product?.minTemperature || 0)} -{" "}
-                            {formatTemperature(product?.maxTemperature || 0)}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm">
-                            {new Date(record.recordedAt).toLocaleString("es-ES")}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm">{record.notes || "-"}</p>
-                        </div>
+                        {record.observations && (
+                          <div>
+                            <p className="text-xs text-muted-foreground">Observaciones</p>
+                            <p className="text-sm">{record.observations}</p>
+                          </div>
+                        )}
                       </div>
                       <Button
                         type="button"
