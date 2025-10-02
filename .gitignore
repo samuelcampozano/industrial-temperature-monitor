@@ -130,5 +130,15 @@ publish/
 *.nupkg
 *.snupkg
 
+# Original reference files (not needed in repo)
+*.xlsx
+*.png
+*.jpg
+*.jpeg
+*.pdf
+
+# Claude settings
+.claude/
+
 # Keep these
 !.gitkeep
