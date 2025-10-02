@@ -32,14 +32,15 @@ import {
 // Authentication Endpoints
 // ============================================================================
 export const authApi = {
+  // Login endpoint - extracts data from ApiResponse wrapper
   login: async (data: LoginRequest): Promise<LoginResponse> => {
-    const response = await apiClient.post<LoginResponse>("/auth/login", data);
-    return response.data;
+    const response = await apiClient.post<ApiResponse<LoginResponse>>("/auth/login", data);
+    return response.data.data!;
   },
 
   refreshToken: async (data: RefreshTokenRequest): Promise<RefreshTokenResponse> => {
-    const response = await apiClient.post<RefreshTokenResponse>("/auth/refresh", data);
-    return response.data;
+    const response = await apiClient.post<ApiResponse<RefreshTokenResponse>>("/auth/refresh-token", data);
+    return response.data.data!;
   },
 
   logout: async (): Promise<void> => {
@@ -61,46 +62,46 @@ export const formsApi = {
     pagination?: PaginationParams
   ): Promise<PagedResponse<TemperatureControlForm>> => {
     const params = { ...filters, ...pagination };
-    const response = await apiClient.get<PagedResponse<TemperatureControlForm>>(
-      "/forms",
+    const response = await apiClient.get<ApiResponse<PagedResponse<TemperatureControlForm>>>(
+      "/temperatureforms",
       { params }
     );
-    return response.data;
+    return response.data.data!;
   },
 
   getById: async (id: string): Promise<TemperatureControlForm> => {
-    const response = await apiClient.get<TemperatureControlForm>(`/forms/${id}`);
-    return response.data;
+    const response = await apiClient.get<ApiResponse<TemperatureControlForm>>(`/temperatureforms/${id}`);
+    return response.data.data!;
   },
 
   create: async (data: CreateFormDto): Promise<TemperatureControlForm> => {
-    const response = await apiClient.post<TemperatureControlForm>("/forms", data);
-    return response.data;
+    const response = await apiClient.post<ApiResponse<TemperatureControlForm>>("/temperatureforms", data);
+    return response.data.data!;
   },
 
   update: async (id: string, data: UpdateFormDto): Promise<TemperatureControlForm> => {
-    const response = await apiClient.put<TemperatureControlForm>(`/forms/${id}`, data);
-    return response.data;
+    const response = await apiClient.put<ApiResponse<TemperatureControlForm>>(`/temperatureforms/${id}`, data);
+    return response.data.data!;
   },
 
   delete: async (id: string): Promise<void> => {
-    await apiClient.delete(`/forms/${id}`);
+    await apiClient.delete(`/temperatureforms/${id}`);
   },
 
   submit: async (id: string, data: SubmitFormDto): Promise<TemperatureControlForm> => {
-    const response = await apiClient.post<TemperatureControlForm>(
-      `/forms/${id}/submit`,
+    const response = await apiClient.post<ApiResponse<TemperatureControlForm>>(
+      `/temperatureforms/${id}/submit`,
       data
     );
-    return response.data;
+    return response.data.data!;
   },
 
   review: async (id: string, data: ReviewFormDto): Promise<TemperatureControlForm> => {
-    const response = await apiClient.post<TemperatureControlForm>(
-      `/forms/${id}/review`,
+    const response = await apiClient.post<ApiResponse<TemperatureControlForm>>(
+      `/temperatureforms/${id}/review`,
       data
     );
-    return response.data;
+    return response.data.data!;
   },
 
   // Temperature Records
@@ -108,11 +109,11 @@ export const formsApi = {
     formId: string,
     data: CreateTemperatureRecordDto
   ): Promise<TemperatureRecord> => {
-    const response = await apiClient.post<TemperatureRecord>(
-      `/forms/${formId}/records`,
+    const response = await apiClient.post<ApiResponse<TemperatureRecord>>(
+      `/temperatureforms/${formId}/records`,
       data
     );
-    return response.data;
+    return response.data.data!;
   },
 
   updateRecord: async (
@@ -120,20 +121,15 @@ export const formsApi = {
     recordId: string,
     data: UpdateTemperatureRecordDto
   ): Promise<TemperatureRecord> => {
-    const response = await apiClient.put<TemperatureRecord>(
-      `/forms/${formId}/records/${recordId}`,
+    const response = await apiClient.put<ApiResponse<TemperatureRecord>>(
+      `/temperatureforms/${formId}/records/${recordId}`,
       data
     );
-    return response.data;
+    return response.data.data!;
   },
 
   deleteRecord: async (formId: string, recordId: string): Promise<void> => {
-    await apiClient.delete(`/forms/${formId}/records/${recordId}`);
-  },
-
-  getRecords: async (formId: string): Promise<TemperatureRecord[]> => {
-    const response = await apiClient.get<TemperatureRecord[]>(`/forms/${formId}/records`);
-    return response.data;
+    await apiClient.delete(`/temperatureforms/${formId}/records/${recordId}`);
   },
 };
 
@@ -144,33 +140,35 @@ export const productsApi = {
   getAll: async (
     params?: { active?: boolean; search?: string } & PaginationParams
   ): Promise<PagedResponse<Product>> => {
-    const response = await apiClient.get<PagedResponse<Product>>("/products", { params });
-    return response.data;
+    const response = await apiClient.get<ApiResponse<PagedResponse<Product>>>("/products", { params });
+    return response.data.data!;
   },
 
   getAllActive: async (): Promise<Product[]> => {
-    const response = await apiClient.get<Product[]>("/products/active");
-    return response.data;
+    const response = await apiClient.get<ApiResponse<Product[]>>("/products", {
+      params: { isActive: true }
+    });
+    return response.data.data!;
   },
 
   getById: async (id: string): Promise<Product> => {
-    const response = await apiClient.get<Product>(`/products/${id}`);
-    return response.data;
+    const response = await apiClient.get<ApiResponse<Product>>(`/products/${id}`);
+    return response.data.data!;
   },
 
   getByBarcode: async (barcode: string): Promise<Product> => {
-    const response = await apiClient.get<Product>(`/products/barcode/${barcode}`);
-    return response.data;
+    const response = await apiClient.get<ApiResponse<Product>>(`/products/barcode/${barcode}`);
+    return response.data.data!;
   },
 
   create: async (data: CreateProductDto): Promise<Product> => {
-    const response = await apiClient.post<Product>("/products", data);
-    return response.data;
+    const response = await apiClient.post<ApiResponse<Product>>("/products", data);
+    return response.data.data!;
   },
 
   update: async (id: string, data: UpdateProductDto): Promise<Product> => {
-    const response = await apiClient.put<Product>(`/products/${id}`, data);
-    return response.data;
+    const response = await apiClient.put<ApiResponse<Product>>(`/products/${id}`, data);
+    return response.data.data!;
   },
 
   delete: async (id: string): Promise<void> => {
@@ -235,22 +233,31 @@ export const reportsApi = {
 // ============================================================================
 export const dashboardApi = {
   getStats: async (): Promise<DashboardStats> => {
-    const response = await apiClient.get<DashboardStats>("/dashboard/stats");
-    return response.data;
+    // Backend returns DashboardStatisticsDto from /api/reports/statistics wrapped in ApiResponse
+    const response = await apiClient.get<ApiResponse<any>>("/reports/statistics");
+    const data = response.data.data;
+    
+    // Map backend DTO to frontend interface
+    return {
+      totalForms: data.TotalForms || 0,
+      reviewedForms: data.TotalForms - data.PendingReview || 0,
+      pendingForms: data.PendingReview || 0,
+      totalAlerts: data.TotalAlerts || 0,
+      criticalAlerts: data.CriticalAlerts || 0,
+      totalProducts: data.TopProducts?.length || 0,
+      activeProducts: data.TopProducts?.length || 0,
+      totalRecordsToday: data.TotalRecords || 0,
+    };
   },
 
   getRecentActivity: async (limit: number = 10): Promise<RecentActivity[]> => {
-    const response = await apiClient.get<RecentActivity[]>("/dashboard/activity", {
-      params: { limit },
-    });
-    return response.data;
+    // TODO: Backend endpoint not implemented yet
+    return Promise.resolve([]);
   },
 
   getTemperatureTrends: async (days: number = 7): Promise<TemperatureTrend[]> => {
-    const response = await apiClient.get<TemperatureTrend[]>("/dashboard/trends", {
-      params: { days },
-    });
-    return response.data;
+    // TODO: Backend endpoint not implemented yet
+    return Promise.resolve([]);
   },
 };
 
