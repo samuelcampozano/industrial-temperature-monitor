@@ -3,7 +3,13 @@
     "allow": [
       "Bash(git init:*)",
       "Bash(git config:*)",
-      "Bash(dotnet new:*)"
+      "Bash(dotnet new:*)",
+      "Bash(git branch:*)",
+      "Bash(git rm:*)",
+      "Bash(git push:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

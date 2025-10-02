@@ -43,9 +43,9 @@ The API will be available at: http://localhost:5000
 
 | Email | Password | Role |
 |-------|----------|------|
-| admin@temp.com | Admin123! | Administrator |
-| supervisor@temp.com | Super123! | Supervisor |
-| operador@temp.com | Oper123! | Operator |
+| admin@temp.com | SecurePass123! | Administrator |
+| supervisor@temp.com | SecurePass123! | Supervisor |
+| operador@temp.com | SecurePass123! | Operator |
 | auditor@temp.com | Audit123! | Auditor |
 
 ### SQL Server
@@ -272,7 +272,7 @@ Use this data to test the application immediately after startup.
 
 1. Navigate to http://localhost:5000/swagger
 2. Click "Authorize" button
-3. Login with: admin@temp.com / Admin123!
+3. Login with: admin@temp.com / SecurePass123!
 4. Copy the token from the response
 5. Paste in the authorization dialog: `Bearer <your-token>`
 6. Test endpoints
@@ -283,7 +283,7 @@ Use this data to test the application immediately after startup.
 # Login
 curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@temp.com","password":"Admin123!"}'
+  -d '{"email":"admin@temp.com","password":"SecurePass123!"}'
 
 # Get forms (replace TOKEN with actual token)
 curl -X GET http://localhost:5000/api/temperatureforms \

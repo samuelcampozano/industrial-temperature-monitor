@@ -146,9 +146,9 @@ After running the database seeder, these users are available:
 
 | Email | Password | Role | Description |
 |-------|----------|------|-------------|
-| admin@temp.com | Admin123! | Administrator | Full system access |
-| supervisor@temp.com | Super123! | Supervisor | Can review forms |
-| operador@temp.com | Oper123! | Operator | Can create forms |
+| admin@temp.com | SecurePass123! | Administrator | Full system access |
+| supervisor@temp.com | SecurePass123! | Supervisor | Can review forms |
+| operador@temp.com | SecurePass123! | Operator | Can create forms |
 | auditor@temp.com | Audit123! | Auditor | Read-only access |
 
 ## Sample Data
@@ -257,7 +257,7 @@ dotnet ef migrations remove \
 # Login
 curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@temp.com","password":"Admin123!"}'
+  -d '{"email":"admin@temp.com","password":"SecurePass123!"}'
 
 # Get temperature forms
 curl -X GET http://localhost:5000/api/temperatureforms \

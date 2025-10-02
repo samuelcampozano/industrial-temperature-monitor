@@ -290,9 +290,9 @@ npm start
 
 | Role | Email | Password | Access Level |
 |------|-------|----------|--------------|
-| Admin | admin@temp.com | Admin123! | Full system access |
-| Supervisor | supervisor@temp.com | Super123! | Review forms, reports |
-| Operator | operador@temp.com | Oper123! | Create/edit forms |
+| Admin | admin@temp.com | SecurePass123! | Full system access |
+| Supervisor | supervisor@temp.com | SecurePass123! | Review forms, reports |
+| Operator | operador@temp.com | SecurePass123! | Create/edit forms |
 | Auditor | auditor@temp.com | Audit123! | Read-only access |
 
 ---

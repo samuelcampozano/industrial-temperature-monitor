@@ -27,7 +27,7 @@ Abrir navegador en: **http://localhost:3000**
 ### Paso 3: Login
 **Credenciales:**
 - Email: `admin@temp.com`
-- Password: `Admin123!`
+- Password: `SecurePass123!`
 
 ---
 
@@ -175,7 +175,7 @@ Abrir navegador en: **http://localhost:3000**
 2. "Cerrar Sesión"
 3. Login con:
    - Email: `supervisor@temp.com`
-   - Password: `Super123!`
+   - Password: `SecurePass123!`
 
 **Paso 2: Buscar Formulario Pendiente**
 1. Ir a "Formularios"
@@ -328,12 +328,12 @@ Abrir navegador en: **http://localhost:3000**
 
 ### Test 2: Permisos por Rol
 **Como Operador:**
-1. Login con `operador@temp.com` / `Oper123!`
+1. Login con `operador@temp.com` / `SecurePass123!`
 2. Intentar acceder a "Productos" (sidebar)
 3. **Resultado esperado:** Opción no visible o acceso denegado
 
 **Como Supervisor:**
-1. Login con `supervisor@temp.com` / `Super123!`
+1. Login con `supervisor@temp.com` / `SecurePass123!`
 2. Verificar que puede revisar formularios
 3. Intentar eliminar formulario
 4. **Resultado esperado:** Puede revisar pero no eliminar
@@ -352,7 +352,7 @@ Abrir navegador en: **http://localhost:3000**
 POST /api/auth/login
 {
   "email": "admin@temp.com",
-  "password": "Admin123!"
+  "password": "SecurePass123!"
 }
 ```
 

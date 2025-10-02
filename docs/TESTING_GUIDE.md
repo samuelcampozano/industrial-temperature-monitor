@@ -18,9 +18,9 @@ docker-compose ps
 ### 3. Credenciales de Prueba
 | Rol | Email | Contraseña |
 |-----|-------|------------|
-| Administrador | admin@temp.com | Admin123! |
-| Supervisor | supervisor@temp.com | Super123! |
-| Operador | operador@temp.com | Oper123! |
+| Administrador | admin@temp.com | SecurePass123! |
+| Supervisor | supervisor@temp.com | SecurePass123! |
+| Operador | operador@temp.com | SecurePass123! |
 
 ---
 
@@ -28,7 +28,7 @@ docker-compose ps
 
 ### Flujo 1: Login y Dashboard
 1. Navegar a http://localhost:3000
-2. Iniciar sesión con `admin@temp.com / Admin123!`
+2. Iniciar sesión con `admin@temp.com / SecurePass123!`
 3. Verificar redirección al dashboard
 4. Verificar tarjetas de estadísticas muestran datos
 5. Verificar gráfico de temperatura se renderiza
@@ -37,7 +37,7 @@ docker-compose ps
 **Resultado Esperado**: Dashboard completo con datos seed
 
 ### Flujo 2: Crear Formulario (Como Operador)
-1. Login con `operador@temp.com / Oper123!`
+1. Login con `operador@temp.com / SecurePass123!`
 2. Click en "Formularios" en el sidebar
 3. Click en "Nuevo Formulario"
 4. Llenar información:
@@ -59,7 +59,7 @@ docker-compose ps
 
 ### Flujo 3: Revisar y Aprobar (Como Supervisor)
 1. Logout del operador
-2. Login con `supervisor@temp.com / Super123!`
+2. Login con `supervisor@temp.com / SecurePass123!`
 3. Ir a "Formularios"
 4. Filtrar por estado "Completed"
 5. Click en formulario recién creado
@@ -127,7 +127,7 @@ http://localhost:5000/swagger
 # POST /api/auth/login
 {
   "email": "admin@temp.com",
-  "password": "Admin123!"
+  "password": "SecurePass123!"
 }
 
 # Copiar el token de la respuesta

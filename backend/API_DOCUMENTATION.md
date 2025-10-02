@@ -25,7 +25,7 @@ Request:
 ```json
 {
   "email": "admin@temp.com",
-  "password": "Admin123!"
+  "password": "SecurePass123!"
 }
 ```
 
@@ -467,7 +467,7 @@ All dates and times are in ISO 8601 format (UTC):
 1. **Login**
    ```bash
    POST /api/auth/login
-   Body: { "email": "operador@temp.com", "password": "Oper123!" }
+   Body: { "email": "operador@temp.com", "password": "SecurePass123!" }
    ```
 
 2. **Create Form**

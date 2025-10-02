@@ -49,9 +49,9 @@ docker-compose ps
 ### Credenciales por Defecto
 | Usuario | Email | Contraseña | Rol |
 |---------|-------|------------|-----|
-| Admin | admin@temp.com | Admin123! | Administrator |
-| Supervisor | supervisor@temp.com | Super123! | Supervisor |
-| Operador | operador@temp.com | Oper123! | Operator |
+| Admin | admin@temp.com | SecurePass123! | Administrator |
+| Supervisor | supervisor@temp.com | SecurePass123! | Supervisor |
+| Operador | operador@temp.com | SecurePass123! | Operator |
 | Auditor | auditor@temp.com | Audit123! | Auditor |
 
 ### Detener Servicios
