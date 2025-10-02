@@ -111,7 +111,10 @@ tmp/
 temp/
 *.tmp
 
-# Secrets
+# Secrets and Environment Variables
+.env
+.env.local
+.env.*.local
 appsettings.Development.json
 appsettings.Production.json
 secrets.json

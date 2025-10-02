@@ -7,7 +7,7 @@ services:
     container_name: temperaturecontrol-sqlserver
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=TempControl2024!
+      - SA_PASSWORD=${SQL_SA_PASSWORD:-YourStrong@Passw0rd}
       - MSSQL_PID=Express
     ports:
       - "1433:1433"
@@ -16,7 +16,7 @@ services:
     networks:
       - temperature-network
     healthcheck:
-      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P TempControl2024! -Q "SELECT 1"
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${SQL_SA_PASSWORD:-YourStrong@Passw0rd} -Q "SELECT 1"
       interval: 30s
       timeout: 10s
       retries: 5
@@ -46,9 +46,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TemperatureControlDB;User Id=sa;Password=TempControl2024!;TrustServerCertificate=True;
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TemperatureControlDB;User Id=sa;Password=${SQL_SA_PASSWORD:-YourStrong@Passw0rd};TrustServerCertificate=True;
       - ConnectionStrings__Redis=redis:6379
-      - JWT__Secret=SuperSecretKeyForTemperatureControl2024!MustBeAtLeast32Characters
+      - JWT__Secret=${JWT_SECRET:-CHANGE_THIS_SECRET_KEY_MIN_32_CHARS}
       - JWT__Issuer=TemperatureControlAPI
       - JWT__Audience=TemperatureControlClient
       - JWT__ExpirationMinutes=60
