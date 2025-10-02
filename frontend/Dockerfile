@@ -1,6 +1,20 @@
 # Multi-stage build for Next.js production
 
-# Stage 1: Dependencies
+# Stage 1: Development
+FROM node:20-alpine AS development
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json* ./
+RUN npm ci --legacy-peer-deps
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]
+
+# Stage 2: Dependencies
 FROM node:20-alpine AS deps
 WORKDIR /app
 
@@ -8,12 +22,12 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci --only=production
 
-# Stage 2: Build
+# Stage 3: Build
 FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 COPY . .
 
@@ -21,7 +35,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
 
-# Stage 3: Production runner
+# Stage 4: Production runner
 FROM node:20-alpine AS runner
 WORKDIR /app
 

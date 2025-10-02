@@ -1,4 +1,25 @@
-# Stage 1: Build
+# Stage 1: Development
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS development
+WORKDIR /src
+
+# Copy solution and project files
+COPY ["src/TemperatureControl.API/TemperatureControl.API.csproj", "src/TemperatureControl.API/"]
+COPY ["src/TemperatureControl.Domain/TemperatureControl.Domain.csproj", "src/TemperatureControl.Domain/"]
+COPY ["src/TemperatureControl.Infrastructure/TemperatureControl.Infrastructure.csproj", "src/TemperatureControl.Infrastructure/"]
+
+# Restore dependencies
+RUN dotnet restore "src/TemperatureControl.API/TemperatureControl.API.csproj"
+
+# Copy all source files
+COPY . .
+
+WORKDIR "/src/src/TemperatureControl.API"
+
+EXPOSE 5000
+
+CMD ["dotnet", "watch", "run", "--no-launch-profile"]
+
+# Stage 2: Build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
@@ -17,11 +38,11 @@ COPY . .
 WORKDIR "/src/src/TemperatureControl.API"
 RUN dotnet build "TemperatureControl.API.csproj" -c Release -o /app/build
 
-# Stage 2: Publish
+# Stage 3: Publish
 FROM build AS publish
 RUN dotnet publish "TemperatureControl.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# Stage 3: Runtime
+# Stage 4: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
