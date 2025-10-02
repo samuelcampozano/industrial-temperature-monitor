@@ -7,6 +7,7 @@ using Serilog;
 using FluentValidation;
 using Hangfire;
 using Hangfire.SqlServer;
+using Hangfire.Dashboard;
 using TemperatureControl.Infrastructure.Data;
 using TemperatureControl.Domain.Interfaces;
 using TemperatureControl.Infrastructure.Repositories;
