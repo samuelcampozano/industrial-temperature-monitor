@@ -392,7 +392,7 @@ Este proyecto está bajo la Licencia MIT. Ver archivo [LICENSE](LICENSE) para m�
 ## 👥 Equipo
 
 - **Desarrollador Principal**: Samuel Campozano
-- **Contacto**: samuelco860@gmail.com
+- **Contacto**: contact@example.com
 
 ## 🙏 Agradecimientos
 
