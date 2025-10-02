@@ -129,6 +129,7 @@ export interface CreateFormDto {
   destination: string;
   defrostDate: string;
   productionDate: string;
+  temperatureRecords?: CreateTemperatureRecordDto[];
 }
 
 export interface UpdateFormDto {
@@ -150,16 +151,24 @@ export interface ReviewFormDto {
 
 // Temperature Record DTOs
 export interface CreateTemperatureRecordDto {
-  productId: string;
-  temperature: number;
-  recordedAt: string;
-  notes?: string;
+  carNumber: number;
+  productCode?: string;
+  productId?: string;
+  defrostStartTime?: string; // TimeSpan as string "HH:mm:ss"
+  productTemperature: number;
+  consumptionStartTime?: string; // TimeSpan as string "HH:mm:ss"
+  consumptionEndTime?: string; // TimeSpan as string "HH:mm:ss"
+  observations?: string;
 }
 
 export interface UpdateTemperatureRecordDto {
-  temperature?: number;
-  recordedAt?: string;
-  notes?: string;
+  carNumber?: number;
+  productId?: string;
+  defrostStartTime?: string;
+  productTemperature?: number;
+  consumptionStartTime?: string;
+  consumptionEndTime?: string;
+  observations?: string;
 }
 
 // Product DTOs
