@@ -159,6 +159,38 @@ public class AuthController : ControllerBase
         }
     }
 
+    [HttpPost("logout")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
+    public async Task<ActionResult<ApiResponse<object>>> Logout()
+    {
+        try
+        {
+            // Get user ID from JWT claims
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                // Clear refresh token from database
+                var user = await _unitOfWork.Users.GetByIdAsync(userId);
+                if (user != null)
+                {
+                    user.RefreshToken = null;
+                    user.RefreshTokenExpiryTime = null;
+                    await _unitOfWork.Users.UpdateAsync(user);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    _logger.LogInformation("Usuario {UserId} cerró sesión exitosamente", userId);
+                }
+            }
+
+            return Ok(ApiResponse<object>.SuccessResponse(null, "Sesión cerrada exitosamente"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al cerrar sesión");
+            return StatusCode(500, ApiResponse<object>.ErrorResponse("Error al cerrar sesión"));
+        }
+    }
+
     private string GenerateJwtToken(User user)
     {
         var jwtSettings = _configuration.GetSection("JWT");
