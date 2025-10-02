@@ -42,11 +42,16 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await login(data);
+
       toast({
         title: "¡Bienvenido!",
         description: "Has iniciado sesión exitosamente",
       });
-      router.push("/dashboard");
+
+      // Force navigation to dashboard to ensure state is persisted
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 500);
     } catch (error: any) {
       toast({
         title: "Error al iniciar sesión",
