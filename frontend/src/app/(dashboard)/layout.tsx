@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -12,19 +12,30 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { isAuthenticated, checkAuth } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasToken, setHasToken] = useState(false);
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
+    // Check localStorage on mount (client-side only)
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+    
+    console.log("Dashboard layout - Token exists:", !!token, "User exists:", !!user);
+    
+    if (!token || !user) {
+      // No token, redirect to login
+      console.log("No token/user found, redirecting to login");
       router.push("/login");
+    } else {
+      // Has token, allow access
+      console.log("Token found, allowing dashboard access");
+      setHasToken(true);
     }
-  }, [isAuthenticated, router]);
+    setIsLoading(false);
+  }, [router]);
 
-  if (!isAuthenticated) {
+  // Show nothing while checking auth (prevents flash)
+  if (isLoading || !hasToken) {
     return null;
   }
 

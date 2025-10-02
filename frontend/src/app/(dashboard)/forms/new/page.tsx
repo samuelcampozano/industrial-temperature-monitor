@@ -164,7 +164,7 @@ export default function NewFormPage() {
         description: "El formulario se ha creado correctamente",
       });
 
-      router.push(`/forms/${form.id}`);
+      router.push("/forms");
     } catch (error: any) {
       toast({
         title: "Error",

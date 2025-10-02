@@ -96,11 +96,11 @@ apiClient.interceptors.response.use(
 
         try {
           // Try to refresh the token
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+          const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
             refreshToken,
           });
 
-          const { token: newToken, refreshToken: newRefreshToken } = response.data;
+          const { token: newToken, refreshToken: newRefreshToken } = response.data.data;
 
           // Save new tokens
           localStorage.setItem("token", newToken);
