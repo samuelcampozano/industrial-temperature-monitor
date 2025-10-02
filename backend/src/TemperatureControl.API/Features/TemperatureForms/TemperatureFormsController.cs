@@ -6,6 +6,7 @@ using TemperatureControl.API.Common;
 using TemperatureControl.Domain.Entities;
 using TemperatureControl.Domain.Enums;
 using TemperatureControl.Domain.Interfaces;
+using TemperatureControl.Infrastructure.Data;
 
 namespace TemperatureControl.API.Features.TemperatureForms;
 
@@ -42,7 +43,8 @@ public class TemperatureFormsController : ControllerBase
             if (pageSize < 1) pageSize = 20;
             if (pageSize > 100) pageSize = 100;
 
-            var query = (await _unitOfWork.TemperatureForms.GetAllAsync())
+            var context = (ApplicationDbContext)_unitOfWork.GetContext();
+            var query = context.TemperatureForms
                 .Include(f => f.CreatedByUser)
                 .Include(f => f.ReviewedByUser)
                 .Include(f => f.TemperatureRecords)
@@ -111,14 +113,14 @@ public class TemperatureFormsController : ControllerBase
     {
         try
         {
-            var forms = await _unitOfWork.TemperatureForms.FindAsync(f => f.Id == id);
-            var form = forms
+            var context = (ApplicationDbContext)_unitOfWork.GetContext();
+            var form = await context.TemperatureForms
                 .Include(f => f.CreatedByUser)
                 .Include(f => f.ReviewedByUser)
                 .Include(f => f.TemperatureRecords)
                     .ThenInclude(r => r.Product)
                 .Include(f => f.Alerts)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync(f => f.Id == id);
 
             if (form == null)
             {
@@ -191,9 +193,10 @@ public class TemperatureFormsController : ControllerBase
 
             _logger.LogInformation("Formulario {FormNumber} creado por usuario {UserId}", form.FormNumber, userId);
 
-            var createdForm = (await _unitOfWork.TemperatureForms.FindAsync(f => f.Id == form.Id))
+            var context = (ApplicationDbContext)_unitOfWork.GetContext();
+            var createdForm = await context.TemperatureForms
                 .Include(f => f.CreatedByUser)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync(f => f.Id == form.Id);
 
             var dto = MapToDto(createdForm!);
             return CreatedAtAction(nameof(GetById), new { id = form.Id },
@@ -279,10 +282,11 @@ public class TemperatureFormsController : ControllerBase
 
             _logger.LogInformation("Formulario {FormNumber} actualizado por usuario {UserId}", form.FormNumber, userId);
 
-            var updatedForm = (await _unitOfWork.TemperatureForms.FindAsync(f => f.Id == id))
+            var context = (ApplicationDbContext)_unitOfWork.GetContext();
+            var updatedForm = await context.TemperatureForms
                 .Include(f => f.CreatedByUser)
                 .Include(f => f.ReviewedByUser)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync(f => f.Id == id);
 
             var dto = MapToDto(updatedForm!);
             return Ok(ApiResponse<TemperatureFormDto>.SuccessResponse(dto, "Formulario actualizado exitosamente"));
@@ -345,12 +349,13 @@ public class TemperatureFormsController : ControllerBase
             _logger.LogInformation("Formulario {FormNumber} {Status} por usuario {UserId}",
                 form.FormNumber, statusText, userId);
 
-            var reviewedForm = (await _unitOfWork.TemperatureForms.FindAsync(f => f.Id == id))
+            var context = (ApplicationDbContext)_unitOfWork.GetContext();
+            var reviewedForm = await context.TemperatureForms
                 .Include(f => f.CreatedByUser)
                 .Include(f => f.ReviewedByUser)
                 .Include(f => f.TemperatureRecords)
                     .ThenInclude(r => r.Product)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync(f => f.Id == id);
 
             var dto = MapToDto(reviewedForm!);
             return Ok(ApiResponse<TemperatureFormDto>.SuccessResponse(dto, $"Formulario {statusText} exitosamente"));

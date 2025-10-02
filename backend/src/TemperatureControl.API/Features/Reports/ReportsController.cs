@@ -8,6 +8,7 @@ using TemperatureControl.API.Common;
 using TemperatureControl.Domain.Entities;
 using TemperatureControl.Domain.Enums;
 using TemperatureControl.Domain.Interfaces;
+using TemperatureControl.Infrastructure.Data;
 
 namespace TemperatureControl.API.Features.Reports;
 
@@ -37,14 +38,15 @@ public class ReportsController : ControllerBase
             var startOfDay = targetDate.Date;
             var endOfDay = startOfDay.AddDays(1).AddTicks(-1);
 
-            var forms = (await _unitOfWork.TemperatureForms.FindAsync(f =>
-                f.CreatedAt >= startOfDay && f.CreatedAt <= endOfDay))
+            var context = (ApplicationDbContext)_unitOfWork.GetContext();
+            var forms = await context.TemperatureForms
                 .Include(f => f.CreatedByUser)
                 .Include(f => f.ReviewedByUser)
                 .Include(f => f.TemperatureRecords)
                     .ThenInclude(r => r.Product)
                 .Include(f => f.Alerts)
-                .ToList();
+                .Where(f => f.CreatedAt >= startOfDay && f.CreatedAt <= endOfDay)
+                .ToListAsync();
 
             var totalForms = forms.Count;
             var draftForms = forms.Count(f => f.Status == FormStatus.Draft);
@@ -131,11 +133,12 @@ public class ReportsController : ControllerBase
             var start = startDate ?? DateTime.UtcNow.AddDays(-30).Date;
             var end = endDate ?? DateTime.UtcNow.Date.AddDays(1).AddTicks(-1);
 
-            var forms = (await _unitOfWork.TemperatureForms.FindAsync(f =>
-                f.CreatedAt >= start && f.CreatedAt <= end))
+            var context = (ApplicationDbContext)_unitOfWork.GetContext();
+            var forms = await context.TemperatureForms
                 .Include(f => f.TemperatureRecords)
                 .Include(f => f.Alerts)
-                .ToList();
+                .Where(f => f.CreatedAt >= start && f.CreatedAt <= end)
+                .ToListAsync();
 
             var totalForms = forms.Count;
             var pendingReview = forms.Count(f => f.Status == FormStatus.Completed);
@@ -230,14 +233,14 @@ public class ReportsController : ControllerBase
     {
         try
         {
-            var forms = await _unitOfWork.TemperatureForms.FindAsync(f => f.Id == id);
-            var form = forms
+            var context = (ApplicationDbContext)_unitOfWork.GetContext();
+            var form = await context.TemperatureForms
                 .Include(f => f.CreatedByUser)
                 .Include(f => f.ReviewedByUser)
                 .Include(f => f.TemperatureRecords)
                     .ThenInclude(r => r.Product)
                 .Include(f => f.Alerts)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync(f => f.Id == id);
 
             if (form == null)
             {

@@ -14,6 +14,11 @@ public interface IUnitOfWork : IDisposable
     IRepository<TemperatureAlert> TemperatureAlerts { get; }
     IRepository<AuditLog> AuditLogs { get; }
 
+    /// <summary>
+    /// Get the underlying DbContext for complex queries with Include
+    /// </summary>
+    object GetContext();
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);
     Task CommitTransactionAsync(CancellationToken cancellationToken = default);
