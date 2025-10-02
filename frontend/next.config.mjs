@@ -5,6 +5,10 @@ const nextConfig = {
   images: {
     domains: ['localhost'],
   },
+  // Fix for Windows ESM URL scheme error
+  experimental: {
+    esmExternals: 'loose',
+  },
   // PWA Configuration
   async headers() {
     return [
