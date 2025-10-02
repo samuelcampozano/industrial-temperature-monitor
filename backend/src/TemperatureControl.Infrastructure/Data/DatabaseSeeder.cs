@@ -375,7 +375,12 @@ public class DatabaseSeeder
                 RecordId = form2Records[1].Id,
                 Severity = AlertSeverity.Critical,
                 Message = $"Temperatura crítica detectada: -9.5°C está fuera del rango permitido ({products[1].MinTemperature}°C a {products[1].MaxTemperature}°C) para producto {products[1].ProductCode}",
-                IsResolved = false,
+                Temperature = -9.5m,
+                ExpectedMinTemperature = products[1].MinTemperature,
+                ExpectedMaxTemperature = products[1].MaxTemperature,
+                IsAcknowledged = false,
+                EmailSent = false,
+                SmsSent = false,
                 CreatedAt = DateTime.UtcNow.AddHours(-6)
             }
         };
