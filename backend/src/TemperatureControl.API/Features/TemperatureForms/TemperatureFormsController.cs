@@ -191,11 +191,56 @@ public class TemperatureFormsController : ControllerBase
             await _unitOfWork.TemperatureForms.AddAsync(form);
             await _unitOfWork.SaveChangesAsync();
 
-            _logger.LogInformation("Formulario {FormNumber} creado por usuario {UserId}", form.FormNumber, userId);
-
             var context = (ApplicationDbContext)_unitOfWork.GetContext();
+
+            // Agregar registros de temperatura si se proporcionaron
+            if (request.TemperatureRecords != null && request.TemperatureRecords.Any())
+            {
+                int recordOrder = 1;
+                foreach (var recordRequest in request.TemperatureRecords)
+                {
+                    // Validar y obtener producto si se proporciona ProductId
+                    Product? product = null;
+                    if (recordRequest.ProductId.HasValue)
+                    {
+                        var products = await _unitOfWork.Products.FindAsync(p => p.Id == recordRequest.ProductId.Value);
+                        product = products.FirstOrDefault();
+                    }
+
+                    var record = new TemperatureRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        FormId = form.Id,
+                        CarNumber = recordRequest.CarNumber,
+                        ProductCode = recordRequest.ProductCode ?? product?.ProductCode ?? string.Empty,
+                        ProductId = recordRequest.ProductId,
+                        DefrostStartTime = recordRequest.DefrostStartTime,
+                        ProductTemperature = recordRequest.ProductTemperature,
+                        ConsumptionStartTime = recordRequest.ConsumptionStartTime,
+                        ConsumptionEndTime = recordRequest.ConsumptionEndTime,
+                        Observations = recordRequest.Observations,
+                        RecordOrder = recordOrder++
+                    };
+
+                    // Validar temperatura y marcar alerta si es necesario
+                    if (product != null && !product.IsTemperatureInRange(record.ProductTemperature))
+                    {
+                        record.HasAlert = true;
+                    }
+
+                    context.TemperatureRecords.Add(record);
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+            }
+
+            _logger.LogInformation("Formulario {FormNumber} creado por usuario {UserId} con {RecordCount} registros",
+                form.FormNumber, userId, request.TemperatureRecords?.Count ?? 0);
+
             var createdForm = await context.TemperatureForms
                 .Include(f => f.CreatedByUser)
+                .Include(f => f.TemperatureRecords)
+                    .ThenInclude(r => r.Product)
                 .FirstOrDefaultAsync(f => f.Id == form.Id);
 
             var dto = MapToDto(createdForm!);
@@ -415,6 +460,27 @@ public class TemperatureFormsController : ControllerBase
         return User.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty;
     }
 
+    private static TemperatureRecordDto MapRecordToDto(TemperatureRecord record)
+    {
+        return new TemperatureRecordDto
+        {
+            Id = record.Id,
+            FormId = record.FormId,
+            CarNumber = record.CarNumber,
+            ProductCode = record.ProductCode,
+            ProductName = record.Product?.ProductName ?? string.Empty,
+            DefrostStartTime = record.DefrostStartTime,
+            ProductTemperature = record.ProductTemperature,
+            ConsumptionStartTime = record.ConsumptionStartTime,
+            ConsumptionEndTime = record.ConsumptionEndTime,
+            Observations = record.Observations,
+            RecordOrder = record.RecordOrder,
+            HasAlert = record.HasAlert,
+            DefrostDurationMinutes = record.GetDefrostDurationMinutes(),
+            ConsumptionDurationMinutes = record.GetConsumptionDurationMinutes()
+        };
+    }
+
     private static TemperatureFormDto MapToDto(TemperatureControlForm form)
     {
         return new TemperatureFormDto
@@ -467,6 +533,7 @@ public record CreateTemperatureFormRequest
     public DateTime ProductionDate { get; set; }
     public string? Observations { get; set; }
     public string? GeoLocation { get; set; }
+    public List<CreateTemperatureRecordRequest>? TemperatureRecords { get; set; }
 }
 
 public record UpdateTemperatureFormRequest
@@ -484,6 +551,29 @@ public record ReviewFormRequest
     public FormStatus Status { get; set; }
     public string? ReviewNotes { get; set; }
     public string? ReviewedBySignature { get; set; }
+}
+
+public record CreateTemperatureRecordRequest
+{
+    public int CarNumber { get; set; }
+    public string? ProductCode { get; set; }
+    public Guid? ProductId { get; set; }
+    public TimeSpan? DefrostStartTime { get; set; }
+    public decimal ProductTemperature { get; set; }
+    public TimeSpan? ConsumptionStartTime { get; set; }
+    public TimeSpan? ConsumptionEndTime { get; set; }
+    public string? Observations { get; set; }
+}
+
+public record UpdateTemperatureRecordRequest
+{
+    public int? CarNumber { get; set; }
+    public Guid? ProductId { get; set; }
+    public TimeSpan? DefrostStartTime { get; set; }
+    public decimal? ProductTemperature { get; set; }
+    public TimeSpan? ConsumptionStartTime { get; set; }
+    public TimeSpan? ConsumptionEndTime { get; set; }
+    public string? Observations { get; set; }
 }
 
 public class TemperatureFormDto
