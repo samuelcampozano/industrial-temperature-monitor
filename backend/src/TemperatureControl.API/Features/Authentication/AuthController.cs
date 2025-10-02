@@ -123,6 +123,42 @@ public class AuthController : ControllerBase
         }
     }
 
+    [HttpGet("me")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
+    public async Task<ActionResult<ApiResponse<UserDto>>> GetCurrentUser()
+    {
+        try
+        {
+            // Get user ID from JWT claims
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                return Unauthorized(ApiResponse<UserDto>.ErrorResponse("Token inválido"));
+            }
+
+            var user = await _unitOfWork.Users.GetByIdAsync(userId);
+            if (user == null || !user.IsActive)
+            {
+                return NotFound(ApiResponse<UserDto>.ErrorResponse("Usuario no encontrado"));
+            }
+
+            var userDto = new UserDto
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Role = user.Role.ToString()
+            };
+
+            return Ok(ApiResponse<UserDto>.SuccessResponse(userDto));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error al obtener usuario actual");
+            return StatusCode(500, ApiResponse<UserDto>.ErrorResponse("Error interno del servidor"));
+        }
+    }
+
     private string GenerateJwtToken(User user)
     {
         var jwtSettings = _configuration.GetSection("JWT");
