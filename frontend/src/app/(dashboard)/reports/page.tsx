@@ -120,17 +120,21 @@ export default function ReportsPage() {
   };
 
   // Chart data
-  const chartData = statistics.map((stat) => ({
-    name: stat.productName,
-    promedio: stat.averageTemperature,
-    registros: stat.totalRecords,
-    fueraRango: stat.outOfRangeCount,
-  }));
+  const chartData = Array.isArray(statistics)
+    ? statistics.map((stat) => ({
+        name: stat.productName,
+        promedio: stat.averageTemperature,
+        registros: stat.totalRecords,
+        fueraRango: stat.outOfRangeCount,
+      }))
+    : [];
 
-  const pieData = statistics.map((stat) => ({
-    name: stat.productName,
-    value: stat.totalRecords,
-  }));
+  const pieData = Array.isArray(statistics)
+    ? statistics.map((stat) => ({
+        name: stat.productName,
+        value: stat.totalRecords,
+      }))
+    : [];
 
   const COLORS = [
     "hsl(var(--chart-1))",

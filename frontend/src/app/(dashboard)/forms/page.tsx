@@ -153,7 +153,7 @@ export default function FormsPage() {
                   Cargando...
                 </TableCell>
               </TableRow>
-            ) : forms.length === 0 ? (
+            ) : !forms || forms.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   No se encontraron formularios
